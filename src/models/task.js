@@ -12,12 +12,13 @@ const taskSchema = new mongoose.Schema({
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'User'
     }
 })
 
 taskSchema.pre('save', function () {
-    console.log('alo 123');
+    // console.log('alo 123');
 })
 
 const Tasks = mongoose.model('Tasks', taskSchema);

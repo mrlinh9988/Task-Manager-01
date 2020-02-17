@@ -2,6 +2,7 @@ const validator = require('validator');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('../models/task');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -50,6 +51,17 @@ const userSchema = new mongoose.Schema({
         }
     }]
 });
+
+// Virtual: sử dụng cho 2 hoặc nhiều collection có liên quan (tham chiếu field) đến nhau
+// virtual không được lưu trữ trong database, nó không tác động đến data đã được lưu trong database
+// để xác định who owns what and how they're related
+// Trong trường hợp của collection User thì field '_id' được tham chiếu đến field 'owner' trong collection Task
+userSchema.virtual('tasks', {
+    ref: 'Tasks',
+    localField: '_id',
+    foreignField: 'owner'
+});
+
 
 // login with email and password
 userSchema.statics.findByCredentials = async (email, password) => {
