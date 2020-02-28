@@ -50,12 +50,15 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps: true
 });
 
 // Virtual: sử dụng cho 2 hoặc nhiều collection có liên quan (tham chiếu field) đến nhau
 // virtual không được lưu trữ trong database, nó không tác động đến data đã được lưu trong database
 // để xác định who owns what and how they're related
 // Trong trường hợp của collection User thì field '_id' được tham chiếu đến field 'owner' trong collection Task
+// Tham số thứ nhất là tên bảng virtual
 userSchema.virtual('tasks', {
     ref: 'Tasks',
     localField: '_id',
@@ -81,6 +84,18 @@ userSchema.statics.findByCredentials = async (email, password) => {
     return user;
 }
 
+// Detele user's tasks when user is removed
+userSchema.pre('remove', async function (next) {
+    // cách 1:
+    await Task.deleteMany({ owner: this._id });
+
+    // cách 2:
+    // await this.populate('tasks').execPopulate();
+    // this.tasks.forEach(async task => {
+    //     await Task.findByIdAndRemove({ _id: task._id });
+    // });
+    next();
+});
 
 // mongoose middleware hash the plaintext password 
 userSchema.pre('save', async function (next) {
