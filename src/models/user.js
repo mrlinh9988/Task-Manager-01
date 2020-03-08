@@ -49,7 +49,10 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    avatar: {
+        type: Buffer
+    }
 }, {
     timestamps: true
 });
@@ -118,7 +121,7 @@ userSchema.pre('save', async function (next) {
 // Functionc generate token
 userSchema.methods.generateAuthToken = function () {
     // console.log(this);
-    const token = jwt.sign({ _id: this._id.toString() }, 'linh'); // vì this/_id là ObjectID nên cần chuyển thành String
+    const token = jwt.sign({ _id: this._id.toString() }, process.env.JWT_SECRET); // vì this/_id là ObjectID nên cần chuyển thành String
     this.tokens = this.tokens.concat({ token });
     return token;
 }
@@ -136,6 +139,7 @@ userSchema.methods.toJSON = function () {
     // Xóa 2 thuộc tính của object 
     delete userObject.password;
     delete userObject.tokens;
+    delete userObject.avatar;
 
     // Chú ý không save 
     // Vì không muốn trả về cho client thông tin về password và tokens nên mới không gửi theo 2 thuộc tính này

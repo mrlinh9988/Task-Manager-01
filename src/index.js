@@ -2,9 +2,23 @@ const express = require('express')
 const userRouter = require('./routers/user')
 const taskRouter = require('./routers/task')
 require('./db/mongoose');
+// require('dotenv').config()
+// ./node_modules/.bin/env-cmd -f ./config/dev.env nodemon src/index.js
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
+
+
+const multer = require('multer');
+const upload = multer({
+    dest: 'avatars',
+    limits: {
+        fileSize: 20000000 // 20MB
+    }
+});
+app.post('/upload', upload.single('avatar'), (req, res) => {
+    res.json({ message: 'upload success' });
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

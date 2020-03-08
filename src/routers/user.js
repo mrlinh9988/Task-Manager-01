@@ -2,6 +2,27 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const auth = require('../middleware/auth');
+const sharp = require('sharp');
+// let transporter = require('../email/config');
+const sendMail = require('../email/config');
+
+const multer = require('multer');
+const upload = multer({
+    limits: {
+        fileSize: 1000000 // 1MB
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(png|jpg|jpeg|gif)$/)) {
+            return cb(new Error('Plese upload a PNG/JPG/JPEG/GIF'));
+        }
+
+        cb(undefined, file.originalname);
+
+        // cb(new Error('File must be PDF'));
+        // cb(undefined, true);
+        // cb(undefined, false);
+    }
+});
 
 // Tạo biến môi trường trong POSTMAN
 // B1: Tạo biến môi trường. VD: biến URL thay cho localhost:3000
@@ -23,16 +44,23 @@ const auth = require('../middleware/auth');
 // pm.response.json().token: là giá trị token trả về mỗi khi login thành công
 
 
+// sign up / create new user  and send email to ask new user to verify account
 router.post('/users', async (req, res) => {
-    const user = new User(req.body);
-
     try {
+        const user = new User(req.body);
         await user.save();
         const token = await user.generateAuthToken();
+
+        // send mail to new user and ask new user to verify account
+        sendMail(req, req.body.email, token);
+
         res.status(201).send({ user, token });
     } catch (err) {
-        console.log(err);
-        res.status(400).send(err)
+        console.log('err1: ', err);
+
+        res.status(400).json({
+            error: 'Please check email to verify this email'
+        })
     }
 });
 
@@ -118,7 +146,7 @@ router.patch('/users/me', auth, async (req, res) => {
     // Nếu tồn tại 1 thuộc tính của req.body khác với các trường được cho phép thì return kết quả false
 
     try {
- 
+
         updates.forEach(update => req.user[update] = req.body[update]); // update theo các trường được phép, truyền tử req.body
         await req.user.save(); // lưu lại vào DB
 
@@ -129,7 +157,6 @@ router.patch('/users/me', auth, async (req, res) => {
 });
 
 router.delete('/users/me', auth, async (req, res) => {
-
     try {
 
         // Xóa user đã authenticate
@@ -144,5 +171,43 @@ router.delete('/users/me', auth, async (req, res) => {
 
 // Sử dụng findByID khi cần tìm 1 kết quả theo ID
 // Sử dụng findOne khi cần tìm 1 kết quả có thể theo email, id, ....
+
+
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+
+    const buffer = await sharp(req.file.buffer).resize({ width: 300, height: 300 }).png().toBuffer()
+
+    req.user.avatar = buffer;
+
+    await req.user.save();
+    res.send();
+
+}, (err, req, res, next) => {
+
+    res.status(400).send({ error: err.message });
+
+});
+
+// delete avater
+router.delete('/users/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined;
+    await req.user.save();
+    res.send('delete avatar succees');
+});
+
+router.get('/users/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user || !user.avatar) {
+            throw new Error()
+        }
+
+        res.set('Content-Type', 'image/png');
+        res.send(user.avatar);
+    } catch (error) {
+        res.status(404).send();
+    }
+});
 
 module.exports = router;
