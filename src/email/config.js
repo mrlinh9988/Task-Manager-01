@@ -26,6 +26,7 @@ const sendMail = function (req, toEmail, token) {
 
         console.log('message sent: %s', info.messageId);
         console.log('message sent: %s', info.messageId);
+        console.log('message sent: %s', info.messageId);
     });
 }
 
