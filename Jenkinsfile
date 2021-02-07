@@ -4,6 +4,9 @@ pipeline {
     stage('build') {
       steps {
         echo 'Building the application...'
+        nodejs('Node-15') {
+          sh 'npm install'
+        }
       }
     }
 
