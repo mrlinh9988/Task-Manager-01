@@ -50,12 +50,12 @@ pipeline {
   }
 
   post {
-    always {
-      // always execute 
-    }
+    // always {
+    //   // always execute 
+    // }
 
-    success {
-      // execute when success
-    }
+    // success {
+    //   // execute when success
+    // }
   }
 }
