@@ -1,6 +1,9 @@
 // CODE_CHANGES = getGitChanges()
 pipeline {
   agent any
+  tools {
+
+  }
   environment {
     NEW_VERSION = '1.3.0'
     SEVER_CREDENTIALS = credentials('server-credentials')
@@ -49,13 +52,13 @@ pipeline {
     }
   }
 
-  post {
-    // always {
-    //   // always execute 
-    // }
+  // post {
+  //   // always {
+  //   //   // always execute 
+  //   // }
 
-    // success {
-    //   // execute when success
-    // }
-  }
+  //   // success {
+  //   //   // execute when success
+  //   // }
+  // }
 }
