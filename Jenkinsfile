@@ -11,6 +11,14 @@ pipeline {
     booleanParam(name: 'executeTests', defaultValue: true, description: '')
   }
   stages {
+    stage('init') {
+      steps {
+        script {
+          gv = load "script.groovy"
+        }
+      }
+    }
+
     stage('build') {
       // when {
       //   // execute when branch dev
@@ -19,8 +27,10 @@ pipeline {
       //   }
       // }
       steps {
-        echo "Building the application..."
-        echo "Building version ${NEW_VERSION}"
+        script {
+          gv.buildApp()
+        }
+        
         nodejs('Node') {
           sh 'npm install'
         }
@@ -41,14 +51,18 @@ pipeline {
       //   }
       // }
       steps {
-        echo 'Deploy application'
+        script {
+          gv.testApp()
+        }
       }
     }
 
     stage('deploy') {
       steps {
-        echo 'Deploy application'
-        echo "deploy version ${params.VERSION}"
+        script {
+          gv.deployApp()
+        }
+        
         // echo "server credentials: ${SEVER_CREDENTIALS}"
         // sh "${SEVER_CREDENTIALS}"
         // withCredentials([
