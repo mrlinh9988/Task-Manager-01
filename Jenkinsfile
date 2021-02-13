@@ -31,7 +31,7 @@ pipeline {
           gv.buildApp()
         }
         
-        nodejs('Node') {
+        nodejs('nodejs') {
           sh 'npm install'
         }
       }
